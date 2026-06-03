@@ -17,6 +17,8 @@ Read and execute: `$ARGUMENTS`
 
 4. **Report completion** - Summarise what was done:
    - Tasks completed
-   - Files created/modified  
+   - Files created/modified
    - Test results (if applicable)
    - Any deviations from plan and why
+
+5. **Update our PROGRESS.md**
