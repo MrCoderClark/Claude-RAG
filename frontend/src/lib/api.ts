@@ -31,13 +31,37 @@ export async function* streamChat(
     if (done) break
 
     buffer += decoder.decode(value, { stream: true })
-    const lines = buffer.split('\n\n')
+
+    // Process line by line
+    const lines = buffer.split('\n')
     buffer = lines.pop() || ''
 
     for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        const data = JSON.parse(line.slice(6))
+      const trimmed = line.trim()
+      if (!trimmed || trimmed === 'data:') continue
+
+      // Extract JSON from "data: {...}" or "data: data: {...}"
+      const match = trimmed.match(/data:\s*(?:data:\s*)?(\{.+\})/)
+      if (match) {
+        try {
+          const data = JSON.parse(match[1])
+          yield data
+        } catch {
+          // Skip malformed JSON
+        }
+      }
+    }
+  }
+
+  // Process remaining buffer
+  if (buffer.trim()) {
+    const match = buffer.trim().match(/data:\s*(?:data:\s*)?(\{.+\})/)
+    if (match) {
+      try {
+        const data = JSON.parse(match[1])
         yield data
+      } catch {
+        // Skip malformed JSON
       }
     }
   }
