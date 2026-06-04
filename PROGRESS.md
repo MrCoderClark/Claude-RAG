@@ -41,3 +41,34 @@ Track your progress through the masterclass. Update this file as you complete mo
 - SSE streaming chat responses
 - Messages persisted to Supabase
 - LangSmith tracing configured
+
+### Module 2: BYO Retrieval + Memory
+
+**Status:** [-] In progress
+
+#### Phase 1: Multi-Provider LLM Abstraction ✅
+- [x] LLMProvider enum and PROVIDER_PRESETS in config.py
+- [x] New llm_service.py with provider-agnostic client
+- [x] Update chat.py to use llm_service + model metadata
+- [x] Update .env.example files with new LLM_* vars
+- [x] Delete openai_service.py, remove openai_api_key from Settings
+- [x] Create migration 002_remove_openai_thread_id.sql
+
+**Configuration:**
+- `LLM_PROVIDER`: openai, openrouter, ollama, lm_studio, custom
+- `LLM_API_KEY`: API key for provider
+- `LLM_MODEL`: Model name (optional, uses provider default)
+- `LLM_BASE_URL`: Custom endpoint (optional)
+
+#### Phase 2: Ingestion Pipeline (pending)
+- [ ] Database schema (documents, chunks tables with RLS)
+- [ ] File storage (Supabase Storage)
+- [ ] Ingestion UI (file upload)
+- [ ] Chunking service
+- [ ] Embedding service (pgvector)
+- [ ] Realtime ingestion status
+
+#### Phase 3: Retrieval (pending)
+- [ ] Vector search service
+- [ ] Retrieval tool for chat
+- [ ] Relevance thresholds

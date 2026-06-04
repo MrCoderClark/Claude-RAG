@@ -8,7 +8,7 @@ from supabase import Client, create_client
 from app.config import settings
 from app.dependencies import get_current_user
 from app.models.chat import ChatRequest
-from app.services.openai_service import stream_chat_completion
+from app.services.llm_service import get_model_metadata, stream_chat_completion
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -27,7 +27,7 @@ async def stream_chat(
     thread_response = supabase.table("threads").select("*").eq("id", request.thread_id).eq("user_id", user["id"]).single().execute()
     if not thread_response.data:
         return EventSourceResponse(
-            iter([f'data: {json.dumps({"type": "error", "content": "Thread not found"})}\n\n'])
+            iter([json.dumps({"type": "error", "content": "Thread not found"})])
         )
 
     messages_response = supabase.table("messages").select("role, content").eq("thread_id", request.thread_id).order("created_at").execute()
@@ -45,16 +45,17 @@ async def stream_chat(
         full_response = ""
         async for chunk in stream_chat_completion(history, user["id"], request.thread_id):
             full_response += chunk
-            yield f'data: {json.dumps({"type": "text", "content": chunk})}\n\n'
+            yield json.dumps({"type": "text", "content": chunk})
 
         supabase.table("messages").insert({
             "thread_id": request.thread_id,
             "role": "assistant",
             "content": full_response,
+            "metadata": get_model_metadata(),
         }).execute()
 
         supabase.table("threads").update({"updated_at": "now()"}).eq("id", request.thread_id).execute()
 
-        yield f'data: {json.dumps({"type": "done", "content": ""})}\n\n'
+        yield json.dumps({"type": "done", "content": ""})
 
     return EventSourceResponse(event_generator())
