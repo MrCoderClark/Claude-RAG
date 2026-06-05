@@ -36,6 +36,26 @@ PROVIDER_PRESETS = {
 }
 
 
+class EmbeddingProvider(str, Enum):
+    OPENAI = "openai"
+    OLLAMA = "ollama"
+    CUSTOM = "custom"
+
+
+EMBEDDING_PRESETS = {
+    EmbeddingProvider.OPENAI: {
+        "base_url": None,
+        "default_model": "text-embedding-3-small",
+        "requires_key": True,
+    },
+    EmbeddingProvider.OLLAMA: {
+        "base_url": "http://localhost:11434/v1",
+        "default_model": "nomic-embed-text",
+        "requires_key": False,
+    },
+}
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
@@ -52,6 +72,17 @@ class Settings(BaseSettings):
     llm_model: Optional[str] = None
     llm_base_url: Optional[str] = None
     openrouter_app_name: str = "Claude RAG"
+
+    # Embedding settings
+    embedding_provider: EmbeddingProvider = EmbeddingProvider.OPENAI
+    embedding_api_key: str = ""
+    embedding_model: Optional[str] = None
+    embedding_base_url: Optional[str] = None
+    embedding_dimensions: int = 1536
+
+    # Chunking settings
+    chunk_size: int = 1000
+    chunk_overlap: int = 200
 
     langsmith_api_key: str = ""
     langsmith_project: str = "claude-rag"
