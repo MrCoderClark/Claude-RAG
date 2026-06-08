@@ -1,14 +1,15 @@
 from dataclasses import dataclass
 
 from langsmith import traceable
-from supabase import create_client
+from supabase import Client
 
-from app.config import settings
 from app.services.embedding_service import embed_texts
 
 
 @dataclass
 class RetrievalResult:
+    """Result from vector similarity search. Similarity is 0-1 (cosine)."""
+
     chunk_id: str
     document_id: str
     document_filename: str
@@ -17,12 +18,9 @@ class RetrievalResult:
     similarity: float
 
 
-def _get_supabase():
-    return create_client(settings.supabase_url, settings.supabase_service_role_key)
-
-
 @traceable(name="search_documents")
 async def search_documents(
+    supabase: Client,
     query: str,
     user_id: str,
     threshold: float = 0.7,
@@ -42,8 +40,6 @@ async def search_documents(
 
     query_embedding = embeddings[0]
 
-    supabase = _get_supabase()
-
     response = supabase.rpc(
         "search_chunks",
         {
@@ -53,6 +49,9 @@ async def search_documents(
             "match_count": limit,
         }
     ).execute()
+
+    if hasattr(response, "error") and response.error:
+        raise RuntimeError(f"Vector search failed: {response.error}")
 
     if not response.data:
         return []

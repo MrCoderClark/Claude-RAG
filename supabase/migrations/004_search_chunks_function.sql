@@ -30,3 +30,6 @@ as $$
     order by c.embedding <=> query_embedding
     limit match_count;
 $$;
+
+-- Restrict access to service_role only (prevents direct RPC access bypassing the API)
+revoke execute on function search_chunks(vector, uuid, float, int) from anon, authenticated;
