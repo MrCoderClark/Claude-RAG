@@ -44,7 +44,7 @@ Track your progress through the masterclass. Update this file as you complete mo
 
 ### Module 2: BYO Retrieval + Memory
 
-**Status:** [-] In progress
+**Status:** [-] In progress (Phase 2 complete, Phase 3 pending)
 
 #### Phase 1: Multi-Provider LLM Abstraction ✅
 - [x] LLMProvider enum and PROVIDER_PRESETS in config.py
@@ -75,6 +75,21 @@ Track your progress through the masterclass. Update this file as you complete mo
 - `EMBEDDING_DIMENSIONS`: Vector dimensions (default: 1536)
 - `CHUNK_SIZE`: Characters per chunk (default: 1000)
 - `CHUNK_OVERLAP`: Overlap between chunks (default: 200)
+
+**Validated:**
+- Document upload with drag-and-drop
+- SSE progress streaming (uploading → chunking → embedding → completed)
+- Recursive text chunking
+- OpenAI embeddings stored in pgvector
+- Document list with status badges
+- Chunk viewer with pagination
+- Delete and reprocess functionality
+- Tab navigation between Chat and Documents
+
+**Note:** Storage bucket must be created manually for Docker Supabase:
+```powershell
+docker exec -i supabase-db psql -U postgres -d postgres -c "INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('documents', 'documents', false, 52428800, ARRAY['text/plain', 'text/markdown']) ON CONFLICT (id) DO NOTHING;"
+```
 
 #### Phase 3: Retrieval (pending)
 - [ ] Vector search service
