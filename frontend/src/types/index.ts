@@ -12,7 +12,7 @@ export interface Message {
   thread_id: string
   role: 'user' | 'assistant'
   content: string
-  metadata: Record<string, unknown> | null
+  metadata: MessageMetadata | null
   created_at: string
 }
 
@@ -42,6 +42,21 @@ export interface Chunk {
   chunk_index: number
   metadata: { start_pos: number; end_pos: number }
   created_at: string
+}
+
+export interface Source {
+  chunk_id: string
+  document_id: string
+  document_filename: string
+  content: string
+  chunk_index: number
+  similarity: number
+}
+
+export interface MessageMetadata {
+  provider?: string
+  model?: string
+  sources?: Source[]
 }
 
 export type UploadStatus = 'uploading' | 'chunking' | 'embedding' | 'completed' | 'failed'
