@@ -60,13 +60,21 @@ Track your progress through the masterclass. Update this file as you complete mo
 - `LLM_MODEL`: Model name (optional, uses provider default)
 - `LLM_BASE_URL`: Custom endpoint (optional)
 
-#### Phase 2: Ingestion Pipeline (pending)
-- [ ] Database schema (documents, chunks tables with RLS)
-- [ ] File storage (Supabase Storage)
-- [ ] Ingestion UI (file upload)
-- [ ] Chunking service
-- [ ] Embedding service (pgvector)
-- [ ] Realtime ingestion status
+#### Phase 2: Ingestion Pipeline ✅
+- [x] Database schema (documents, chunks tables with RLS)
+- [x] File storage (Supabase Storage)
+- [x] Ingestion UI (file upload)
+- [x] Chunking service
+- [x] Embedding service (pgvector)
+- [x] Realtime ingestion status
+
+**Configuration:**
+- `EMBEDDING_PROVIDER`: openai, ollama, custom
+- `EMBEDDING_API_KEY`: API key for provider
+- `EMBEDDING_MODEL`: Model name (default: text-embedding-3-small)
+- `EMBEDDING_DIMENSIONS`: Vector dimensions (default: 1536)
+- `CHUNK_SIZE`: Characters per chunk (default: 1000)
+- `CHUNK_OVERLAP`: Overlap between chunks (default: 200)
 
 #### Phase 3: Retrieval (pending)
 - [ ] Vector search service
