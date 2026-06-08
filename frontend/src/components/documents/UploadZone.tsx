@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Upload, FileText, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import type { UploadStatus } from '@/types'
 
 interface UploadZoneProps {
@@ -122,12 +122,10 @@ export function UploadZone({
                 Supports {ALLOWED_TYPES.join(', ')} files
               </p>
             </div>
-            <Button variant="secondary" size="sm" asChild>
-              <span>
-                <FileText className="mr-2 h-4 w-4" />
-                Select File
-              </span>
-            </Button>
+            <span className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+              <FileText className="mr-2 h-4 w-4" />
+              Select File
+            </span>
           </div>
         </label>
       )}
