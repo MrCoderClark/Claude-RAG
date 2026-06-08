@@ -44,7 +44,7 @@ Track your progress through the masterclass. Update this file as you complete mo
 
 ### Module 2: BYO Retrieval + Memory
 
-**Status:** [-] In progress (Phase 2 complete, Phase 3 pending)
+**Status:** [-] In progress (Phase 3 implemented, needs validation)
 
 #### Phase 1: Multi-Provider LLM Abstraction ✅
 - [x] LLMProvider enum and PROVIDER_PRESETS in config.py
@@ -91,7 +91,22 @@ Track your progress through the masterclass. Update this file as you complete mo
 docker exec -i supabase-db psql -U postgres -d postgres -c "INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('documents', 'documents', false, 52428800, ARRAY['text/plain', 'text/markdown']) ON CONFLICT (id) DO NOTHING;"
 ```
 
-#### Phase 3: Retrieval (pending)
-- [ ] Vector search service
-- [ ] Retrieval tool for chat
-- [ ] Relevance thresholds
+#### Phase 3: Retrieval ✅
+- [x] Vector search service (retrieval_service.py)
+- [x] search_chunks database function (migration 004)
+- [x] Tool definition in llm_service.py
+- [x] Tool orchestration in chat router
+- [x] Source/MessageMetadata types
+- [x] SourcesList component
+- [x] Citations in MessageList
+
+**To apply migration (required before testing):**
+```powershell
+Get-Content supabase/migrations/004_search_chunks_function.sql | docker exec -i supabase-db psql -U postgres -d postgres
+```
+
+**Pending validation:**
+- LLM calls search_documents tool when appropriate
+- Vector search with similarity threshold working
+- Sources displayed in collapsible UI
+- Chunk content expandable
