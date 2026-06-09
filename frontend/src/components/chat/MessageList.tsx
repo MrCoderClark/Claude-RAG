@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { Message } from '@/types'
+import { SourcesList } from './SourcesList'
 
 interface MessageListProps {
   messages: Message[]
@@ -28,6 +29,9 @@ export function MessageList({ messages, streamingContent }: MessageListProps) {
             }`}
           >
             <p className="whitespace-pre-wrap">{message.content}</p>
+            {message.role === 'assistant' && message.metadata?.sources && (
+              <SourcesList sources={message.metadata.sources} />
+            )}
           </div>
         </div>
       ))}

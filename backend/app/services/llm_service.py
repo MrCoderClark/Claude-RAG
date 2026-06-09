@@ -14,6 +14,37 @@ if settings.langsmith_tracing:
     os.environ["LANGSMITH_TRACING"] = "true"
 
 
+SEARCH_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "search_documents",
+        "description": "Search the user's uploaded documents by content similarity. Use when the user asks a question that their documents might answer.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The search query - what to look for in the documents"
+                }
+            },
+            "required": ["query"]
+        }
+    }
+}
+
+LIST_DOCUMENTS_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "list_documents",
+        "description": "List all documents the user has uploaded. Use when the user asks what files or documents they have.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+        }
+    }
+}
+
+
 @dataclass
 class LLMConfig:
     provider: LLMProvider
@@ -74,6 +105,45 @@ def get_model_metadata() -> dict:
 async def stream_chat_completion(
     messages: list[dict], user_id: str, thread_id: str
 ) -> AsyncGenerator[str, None]:
+    response = await client.chat.completions.create(
+        model=_config.model,
+        messages=messages,
+        stream=True,
+        user=user_id,
+    )
+
+    async for chunk in response:
+        if chunk.choices and chunk.choices[0].delta.content:
+            yield chunk.choices[0].delta.content
+
+
+@traceable(name="chat_completion_with_tools")
+async def get_chat_completion_with_tools(
+    messages: list[dict],
+    user_id: str,
+):
+    """
+    Get a chat completion that may include tool calls.
+    Returns the full response object (not streaming).
+    """
+    response = await client.chat.completions.create(
+        model=_config.model,
+        messages=messages,
+        tools=[SEARCH_TOOL, LIST_DOCUMENTS_TOOL],
+        user=user_id,
+    )
+    return response.choices[0].message
+
+
+@traceable(name="chat_completion_after_tool")
+async def stream_chat_after_tool(
+    messages: list[dict],
+    user_id: str,
+) -> AsyncGenerator[str, None]:
+    """
+    Stream a chat completion after tool results have been added.
+    No tools offered - this is the final response.
+    """
     response = await client.chat.completions.create(
         model=_config.model,
         messages=messages,

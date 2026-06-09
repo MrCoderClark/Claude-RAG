@@ -36,5 +36,12 @@ RAG app with chat (default) and document ingestion interfaces. Config via env va
 3. **Validate** - Test and verify the implementation works correctly. Use browser testing where applicable via an appropriate MCP
 4. **Iterate** - Fix any issues found during validation
 
+## Git Workflow
+- Branch naming: `{sequence}-{feature-name}` (e.g., `02-multi-provider-llm`, `03-ingestion-pipeline`)
+- Create PR after completing a phase, merge to main before starting next phase
+- Backend runs in Docker - restart containers after code changes
+
 ## Progress
 Check PROGRESS.md for current module status. Update it as you complete tasks.
+
+**Do not mark modules as complete until ALL phases are done.**

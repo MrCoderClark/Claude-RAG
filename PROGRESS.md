@@ -44,7 +44,7 @@ Track your progress through the masterclass. Update this file as you complete mo
 
 ### Module 2: BYO Retrieval + Memory
 
-**Status:** [-] In progress
+**Status:** [-] In progress (Phase 3 implemented, needs validation)
 
 #### Phase 1: Multi-Provider LLM Abstraction ✅
 - [x] LLMProvider enum and PROVIDER_PRESETS in config.py
@@ -60,15 +60,53 @@ Track your progress through the masterclass. Update this file as you complete mo
 - `LLM_MODEL`: Model name (optional, uses provider default)
 - `LLM_BASE_URL`: Custom endpoint (optional)
 
-#### Phase 2: Ingestion Pipeline (pending)
-- [ ] Database schema (documents, chunks tables with RLS)
-- [ ] File storage (Supabase Storage)
-- [ ] Ingestion UI (file upload)
-- [ ] Chunking service
-- [ ] Embedding service (pgvector)
-- [ ] Realtime ingestion status
+#### Phase 2: Ingestion Pipeline ✅
+- [x] Database schema (documents, chunks tables with RLS)
+- [x] File storage (Supabase Storage)
+- [x] Ingestion UI (file upload)
+- [x] Chunking service
+- [x] Embedding service (pgvector)
+- [x] Realtime ingestion status
 
-#### Phase 3: Retrieval (pending)
-- [ ] Vector search service
-- [ ] Retrieval tool for chat
-- [ ] Relevance thresholds
+**Configuration:**
+- `EMBEDDING_PROVIDER`: openai, ollama, custom
+- `EMBEDDING_API_KEY`: API key for provider
+- `EMBEDDING_MODEL`: Model name (default: text-embedding-3-small)
+- `EMBEDDING_DIMENSIONS`: Vector dimensions (default: 1536)
+- `CHUNK_SIZE`: Characters per chunk (default: 1000)
+- `CHUNK_OVERLAP`: Overlap between chunks (default: 200)
+
+**Validated:**
+- Document upload with drag-and-drop
+- SSE progress streaming (uploading → chunking → embedding → completed)
+- Recursive text chunking
+- OpenAI embeddings stored in pgvector
+- Document list with status badges
+- Chunk viewer with pagination
+- Delete and reprocess functionality
+- Tab navigation between Chat and Documents
+
+**Note:** Storage bucket must be created manually for Docker Supabase:
+```powershell
+docker exec -i supabase-db psql -U postgres -d postgres -c "INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('documents', 'documents', false, 52428800, ARRAY['text/plain', 'text/markdown']) ON CONFLICT (id) DO NOTHING;"
+```
+
+#### Phase 3: Retrieval ✅
+- [x] Vector search service (retrieval_service.py)
+- [x] search_chunks database function (migration 004)
+- [x] Tool definition in llm_service.py
+- [x] Tool orchestration in chat router
+- [x] Source/MessageMetadata types
+- [x] SourcesList component
+- [x] Citations in MessageList
+
+**To apply migration (required before testing):**
+```powershell
+Get-Content supabase/migrations/004_search_chunks_function.sql | docker exec -i supabase-db psql -U postgres -d postgres
+```
+
+**Pending validation:**
+- LLM calls search_documents tool when appropriate
+- Vector search with similarity threshold working
+- Sources displayed in collapsible UI
+- Chunk content expandable

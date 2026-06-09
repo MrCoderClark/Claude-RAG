@@ -12,11 +12,59 @@ export interface Message {
   thread_id: string
   role: 'user' | 'assistant'
   content: string
-  metadata: Record<string, unknown> | null
+  metadata: MessageMetadata | null
   created_at: string
 }
 
 export interface StreamEvent {
   type: 'text' | 'done' | 'error'
   content: string
+}
+
+export interface Document {
+  id: string
+  user_id: string
+  filename: string
+  storage_path: string
+  file_size: number
+  mime_type: string
+  status: 'pending' | 'processing' | 'completed' | 'failed'
+  error_message: string | null
+  chunk_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface Chunk {
+  id: string
+  document_id: string
+  content: string
+  chunk_index: number
+  metadata: { start_pos: number; end_pos: number }
+  created_at: string
+}
+
+export interface Source {
+  chunk_id: string
+  document_id: string
+  document_filename: string
+  content: string
+  chunk_index: number
+  similarity: number
+}
+
+export interface MessageMetadata {
+  provider?: string
+  model?: string
+  sources?: Source[]
+}
+
+export type UploadStatus = 'uploading' | 'chunking' | 'embedding' | 'completed' | 'failed'
+
+export interface UploadEvent {
+  status: UploadStatus
+  document_id?: string
+  chunk_count?: number
+  progress?: number
+  error?: string
 }
