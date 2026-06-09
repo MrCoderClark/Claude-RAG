@@ -18,7 +18,7 @@ SEARCH_TOOL = {
     "type": "function",
     "function": {
         "name": "search_documents",
-        "description": "Search the user's uploaded documents for relevant information. Use this when the user asks a question that might be answered by their documents.",
+        "description": "Search the user's uploaded documents by content similarity. Use when the user asks a question that their documents might answer.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -28,6 +28,18 @@ SEARCH_TOOL = {
                 }
             },
             "required": ["query"]
+        }
+    }
+}
+
+LIST_DOCUMENTS_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "list_documents",
+        "description": "List all documents the user has uploaded. Use when the user asks what files or documents they have.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
         }
     }
 }
@@ -117,7 +129,7 @@ async def get_chat_completion_with_tools(
     response = await client.chat.completions.create(
         model=_config.model,
         messages=messages,
-        tools=[SEARCH_TOOL],
+        tools=[SEARCH_TOOL, LIST_DOCUMENTS_TOOL],
         user=user_id,
     )
     return response.choices[0].message

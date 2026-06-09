@@ -23,17 +23,12 @@ async def search_documents(
     supabase: Client,
     query: str,
     user_id: str,
-    threshold: float = 0.7,
+    threshold: float = 0.5,
     limit: int = 5,
 ) -> list[RetrievalResult]:
-    """
-    Search user's documents for relevant chunks.
+    if not query or not query.strip():
+        return []
 
-    1. Embed the query
-    2. Query pgvector with cosine similarity
-    3. Filter by user_id and threshold
-    4. Return top-k results with document metadata
-    """
     embeddings = await embed_texts([query])
     if not embeddings:
         return []

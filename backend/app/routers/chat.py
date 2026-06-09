@@ -64,7 +64,19 @@ async def stream_chat(
 
     async def event_generator() -> AsyncGenerator[str, None]:
         sources = []
-        messages = history.copy()
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "You are a helpful RAG assistant. The user has uploaded documents to this application "
+                    "that you can search using the search_documents tool. You MUST use the search_documents "
+                    "tool any time the user mentions files, documents, or asks a question that their "
+                    "uploaded documents might answer. Never say you cannot access files or documents — "
+                    "always search first. Even if the user asks whether they have files, search to find out."
+                ),
+            },
+            *history,
+        ]
 
         # First call - may include tool calls
         assistant_message = await get_chat_completion_with_tools(messages, user["id"])
@@ -99,7 +111,6 @@ async def stream_chat(
                     )
                     sources.extend(results)
 
-                    # Format results for LLM
                     if results:
                         tool_result = "\n\n".join([
                             f"From '{r.document_filename}' (chunk {r.chunk_index}, similarity: {r.similarity:.2f}):\n{r.content}"
@@ -108,11 +119,25 @@ async def stream_chat(
                     else:
                         tool_result = "No relevant documents found."
 
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "content": tool_result,
-                    })
+                elif tool_call.function.name == "list_documents":
+                    docs_response = supabase.table("documents").select("filename, status, file_size, created_at").eq("user_id", user["id"]).order("created_at", desc=True).execute()
+                    docs = docs_response.data or []
+                    if docs:
+                        tool_result = "\n".join([
+                            f"- {d['filename']} ({d['status']}, {d['file_size']} bytes)"
+                            for d in docs
+                        ])
+                    else:
+                        tool_result = "No documents have been uploaded yet."
+
+                else:
+                    tool_result = f"Unknown tool: {tool_call.function.name}"
+
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": tool_result,
+                })
 
             # Stream final response after tool results
             full_response = ""
