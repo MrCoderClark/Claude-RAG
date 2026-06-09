@@ -59,12 +59,23 @@ export interface MessageMetadata {
   sources?: Source[]
 }
 
-export type UploadStatus = 'uploading' | 'chunking' | 'embedding' | 'completed' | 'failed'
+export type UploadStatus =
+  | 'uploading'
+  | 'chunking'
+  | 'embedding'
+  | 'completed'
+  | 'failed'
+  | 'duplicate_unchanged'
+  | 'duplicate_changed'
 
 export interface UploadEvent {
   status: UploadStatus
   document_id?: string
+  filename?: string
   chunk_count?: number
   progress?: number
   error?: string
+  chunks_added?: number
+  chunks_removed?: number
+  chunks_unchanged?: number
 }

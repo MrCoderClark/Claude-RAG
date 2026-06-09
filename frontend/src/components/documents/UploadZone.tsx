@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { Upload, FileText, Loader2 } from 'lucide-react'
+import { Upload, FileText, Loader2, CheckCircle2, Info } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import type { UploadStatus } from '@/types'
 
@@ -9,6 +9,11 @@ interface UploadZoneProps {
   progress: number
   chunkCount: number | null
   isUploading: boolean
+  replaceSummary?: {
+    chunks_added: number
+    chunks_removed: number
+    chunks_unchanged: number
+  } | null
 }
 
 const ALLOWED_TYPES = ['.txt', '.md']
@@ -19,6 +24,7 @@ export function UploadZone({
   progress,
   chunkCount,
   isUploading,
+  replaceSummary,
 }: UploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false)
 
@@ -69,7 +75,12 @@ export function UploadZone({
       case 'embedding':
         return `Generating embeddings... ${progress}%`
       case 'completed':
+        if (replaceSummary) {
+          return `Updated: ${replaceSummary.chunks_added} added, ${replaceSummary.chunks_removed} removed, ${replaceSummary.chunks_unchanged} unchanged`
+        }
         return 'Upload complete!'
+      case 'duplicate_unchanged':
+        return 'File is already up to date'
       case 'failed':
         return 'Upload failed'
       default:
@@ -109,6 +120,15 @@ export function UploadZone({
               />
             </div>
           )}
+        </div>
+      ) : status === 'completed' || status === 'duplicate_unchanged' ? (
+        <div className="flex flex-col items-center gap-3">
+          {status === 'duplicate_unchanged' ? (
+            <Info className="h-10 w-10 text-blue-500" />
+          ) : (
+            <CheckCircle2 className="h-10 w-10 text-green-500" />
+          )}
+          <p className="text-sm font-medium">{getStatusMessage()}</p>
         </div>
       ) : (
         <label htmlFor="file-upload" className="cursor-pointer">

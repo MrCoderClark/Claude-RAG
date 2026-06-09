@@ -44,7 +44,7 @@ Track your progress through the masterclass. Update this file as you complete mo
 
 ### Module 2: BYO Retrieval + Memory
 
-**Status:** [-] In progress (Phase 3 implemented, needs validation)
+**Status:** ✅ Complete and validated
 
 #### Phase 1: Multi-Provider LLM Abstraction ✅
 - [x] LLMProvider enum and PROVIDER_PRESETS in config.py
@@ -105,8 +105,30 @@ docker exec -i supabase-db psql -U postgres -d postgres -c "INSERT INTO storage.
 Get-Content supabase/migrations/004_search_chunks_function.sql | docker exec -i supabase-db psql -U postgres -d postgres
 ```
 
-**Pending validation:**
+**Validated:**
 - LLM calls search_documents tool when appropriate
-- Vector search with similarity threshold working
+- Vector search with similarity threshold (0.5) working
 - Sources displayed in collapsible UI
-- Chunk content expandable
+- list_documents tool for file listing queries
+- System prompt guides tool usage
+
+### Module 3: Record Manager
+
+**Status:** ✅ Complete and validated
+
+#### Phase 1: Record Manager
+- [x] Migration 005: add content_hash to documents and chunks tables
+- [x] record_manager.py service (duplicate check, chunk-level diffing)
+- [x] Update ingestion_service.py to store content hashes
+- [x] PUT /documents/{id}/replace endpoint
+- [x] Duplicate detection in upload flow
+- [x] Frontend confirmation dialog for changed files
+- [x] api.ts replaceDocument function
+- [x] Progress summary (chunks added/removed/unchanged)
+
+**Design spec:** `docs/superpowers/specs/2026-06-09-record-manager-design.md`
+
+**To apply migration (required before testing):**
+```powershell
+Get-Content supabase/migrations/005_record_manager.sql | docker exec -i supabase-db psql -U postgres -d postgres
+```
