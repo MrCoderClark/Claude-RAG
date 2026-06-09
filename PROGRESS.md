@@ -114,16 +114,21 @@ Get-Content supabase/migrations/004_search_chunks_function.sql | docker exec -i 
 
 ### Module 3: Record Manager
 
-**Status:** [-] In progress (design complete, implementation pending)
+**Status:** ✅ Complete and validated
 
 #### Phase 1: Record Manager
-- [ ] Migration 005: add content_hash to documents and chunks tables
-- [ ] record_manager.py service (duplicate check, chunk-level diffing)
-- [ ] Update ingestion_service.py to store content hashes
-- [ ] PUT /documents/{id}/replace endpoint
-- [ ] Duplicate detection in upload flow
-- [ ] Frontend confirmation dialog for changed files
-- [ ] api.ts replaceDocument function
-- [ ] Progress summary (chunks added/removed/unchanged)
+- [x] Migration 005: add content_hash to documents and chunks tables
+- [x] record_manager.py service (duplicate check, chunk-level diffing)
+- [x] Update ingestion_service.py to store content hashes
+- [x] PUT /documents/{id}/replace endpoint
+- [x] Duplicate detection in upload flow
+- [x] Frontend confirmation dialog for changed files
+- [x] api.ts replaceDocument function
+- [x] Progress summary (chunks added/removed/unchanged)
 
 **Design spec:** `docs/superpowers/specs/2026-06-09-record-manager-design.md`
+
+**To apply migration (required before testing):**
+```powershell
+Get-Content supabase/migrations/005_record_manager.sql | docker exec -i supabase-db psql -U postgres -d postgres
+```

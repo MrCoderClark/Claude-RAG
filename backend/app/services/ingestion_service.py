@@ -4,6 +4,7 @@ from supabase import Client
 
 from app.services.chunking_service import chunk_text
 from app.services.embedding_service import embed_texts
+from app.services.record_manager import hash_content, hash_chunk
 
 
 async def ingest_document(
@@ -22,7 +23,9 @@ async def ingest_document(
 
         on_progress("chunking", {})
         file_response = supabase.storage.from_("documents").download(doc["storage_path"])
-        content = file_response.decode("utf-8")
+        content_bytes = file_response if isinstance(file_response, bytes) else file_response.encode("utf-8")
+        content = content_bytes.decode("utf-8")
+        content_hash = hash_content(content_bytes)
 
         chunks = chunk_text(content)
         on_progress("chunking", {"chunk_count": len(chunks)})
@@ -31,6 +34,7 @@ async def ingest_document(
             supabase.table("documents").update({
                 "status": "completed",
                 "chunk_count": 0,
+                "content_hash": content_hash,
             }).eq("id", document_id).execute()
             on_progress("completed", {"document_id": document_id, "chunk_count": 0})
             return
@@ -56,6 +60,7 @@ async def ingest_document(
                 "content": chunk.content,
                 "chunk_index": chunk.index,
                 "embedding": embedding,
+                "content_hash": hash_chunk(chunk.content),
                 "metadata": {"start_pos": chunk.start_pos, "end_pos": chunk.end_pos},
             })
 
@@ -64,6 +69,7 @@ async def ingest_document(
         supabase.table("documents").update({
             "status": "completed",
             "chunk_count": len(chunks),
+            "content_hash": content_hash,
         }).eq("id", document_id).execute()
 
         on_progress("completed", {"document_id": document_id, "chunk_count": len(chunks)})

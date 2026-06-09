@@ -3,10 +3,32 @@ import { useDocuments } from '@/hooks/useDocuments'
 import { useUpload } from '@/hooks/useUpload'
 import { UploadZone } from './UploadZone'
 import { DocumentRow } from './DocumentRow'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 export function DocumentsView() {
   const { documents, loading, error, refresh, deleteDocument } = useDocuments()
-  const { upload, reprocess, status, progress, chunkCount, isUploading, reset } = useUpload(() => {
+  const {
+    upload,
+    reprocess,
+    confirmReplace,
+    cancelReplace,
+    status,
+    progress,
+    chunkCount,
+    isUploading,
+    reset,
+    duplicateInfo,
+    replaceSummary,
+  } = useUpload(() => {
     refresh()
     setTimeout(reset, 2000)
   })
@@ -32,6 +54,7 @@ export function DocumentsView() {
           progress={progress}
           chunkCount={chunkCount}
           isUploading={isUploading}
+          replaceSummary={replaceSummary}
         />
       </div>
 
@@ -62,6 +85,21 @@ export function DocumentsView() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={duplicateInfo !== null}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Replace existing file?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {duplicateInfo?.filename} already exists. Content has changed — replace it?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelReplace}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmReplace}>Replace</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

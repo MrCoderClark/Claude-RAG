@@ -16,6 +16,7 @@ from app.models.documents import (
     DocumentResponse,
 )
 from app.services.ingestion_service import ingest_document, reprocess_document
+from app.services.record_manager import check_duplicate, replace_document
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -46,6 +47,23 @@ async def upload_document(
     supabase = get_supabase()
     content = await file.read()
     file_size = len(content)
+
+    dup_result = check_duplicate(supabase, user["id"], file.filename or "file.txt", content)
+
+    if dup_result.status == "unchanged":
+        async def unchanged_generator() -> AsyncGenerator[str, None]:
+            yield json.dumps({"status": "duplicate_unchanged", "filename": file.filename})
+        return EventSourceResponse(unchanged_generator())
+
+    if dup_result.status == "changed":
+        async def changed_generator() -> AsyncGenerator[str, None]:
+            yield json.dumps({
+                "status": "duplicate_changed",
+                "document_id": dup_result.existing_document_id,
+                "filename": file.filename,
+            })
+        return EventSourceResponse(changed_generator())
+
     document_id = str(uuid.uuid4())
     storage_path = f"{user['id']}/{document_id}/{file.filename}"
 
@@ -66,9 +84,6 @@ async def upload_document(
             }
             supabase.table("documents").insert(doc_data).execute()
 
-            def on_progress(status: str, data: dict):
-                pass
-
             progress_events = []
 
             def capture_progress(status: str, data: dict):
@@ -79,6 +94,38 @@ async def upload_document(
             for event in progress_events:
                 yield json.dumps(event)
 
+        except Exception as e:
+            yield json.dumps({"status": "failed", "error": str(e)})
+
+    return EventSourceResponse(event_generator())
+
+
+@router.put("/{document_id}/replace")
+async def replace_document_endpoint(
+    document_id: str,
+    file: UploadFile = File(...),
+    user: dict = Depends(get_current_user),
+):
+    supabase = get_supabase()
+
+    doc_response = supabase.table("documents").select("id").eq("id", document_id).eq("user_id", user["id"]).single().execute()
+    if not doc_response.data:
+        raise HTTPException(404, "Document not found")
+
+    content = await file.read()
+
+    async def event_generator() -> AsyncGenerator[str, None]:
+        progress_events = []
+
+        def capture_progress(status: str, data: dict):
+            progress_events.append({"status": status, **data})
+
+        try:
+            await replace_document(
+                supabase, document_id, user["id"], content, file.filename or "file.txt", capture_progress
+            )
+            for event in progress_events:
+                yield json.dumps(event)
         except Exception as e:
             yield json.dumps({"status": "failed", "error": str(e)})
 

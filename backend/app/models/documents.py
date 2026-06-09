@@ -12,6 +12,7 @@ class DocumentResponse(BaseModel):
     mime_type: str
     status: Literal["pending", "processing", "completed", "failed"]
     error_message: Optional[str]
+    content_hash: Optional[str] = None
     chunk_count: int
     created_at: str
     updated_at: str
@@ -38,8 +39,15 @@ class ChunkListResponse(BaseModel):
 
 
 class UploadProgressEvent(BaseModel):
-    status: Literal["uploading", "chunking", "embedding", "completed", "failed"]
+    status: Literal[
+        "uploading", "chunking", "embedding", "completed", "failed",
+        "duplicate_unchanged", "duplicate_changed",
+    ]
     document_id: Optional[str] = None
+    filename: Optional[str] = None
     chunk_count: Optional[int] = None
     progress: Optional[int] = None
     error: Optional[str] = None
+    chunks_added: Optional[int] = None
+    chunks_removed: Optional[int] = None
+    chunks_unchanged: Optional[int] = None
